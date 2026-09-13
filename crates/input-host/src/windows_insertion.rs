@@ -15,10 +15,13 @@ use windows_sys::Win32::Security::{
     TOKEN_MANDATORY_LABEL, TOKEN_QUERY, TokenElevation, TokenIntegrityLevel,
 };
 use windows_sys::Win32::System::DataExchange::{
-    CloseClipboard, CountClipboardFormats, EmptyClipboard, GetClipboardData,
-    GetClipboardSequenceNumber, IsClipboardFormatAvailable, OpenClipboard, SetClipboardData,
+    CloseClipboard, CountClipboardFormats, EmptyClipboard, EnumClipboardFormats,
+    GetClipboardData, GetClipboardSequenceNumber, IsClipboardFormatAvailable, OpenClipboard,
+    SetClipboardData,
 };
-use windows_sys::Win32::System::Memory::{GMEM_MOVEABLE, GlobalAlloc, GlobalLock, GlobalUnlock};
+use windows_sys::Win32::System::Memory::{
+    GMEM_MOVEABLE, GlobalAlloc, GlobalLock, GlobalSize, GlobalUnlock,
+};
 use windows_sys::Win32::System::SystemServices::{
     SECURITY_MANDATORY_HIGH_RID, SECURITY_MANDATORY_LOW_RID, SECURITY_MANDATORY_MEDIUM_PLUS_RID,
     SECURITY_MANDATORY_MEDIUM_RID, SECURITY_MANDATORY_PROTECTED_PROCESS_RID,
@@ -50,6 +53,8 @@ const CLIPBOARD_OPEN_RETRY_DELAY: Duration = Duration::from_millis(10);
 const CLIPBOARD_WAIT_TIMEOUT: Duration = Duration::from_millis(1_500);
 const FAST_CLIPBOARD_WAIT_TIMEOUT: Duration = Duration::from_millis(180);
 const CLIPBOARD_PASTE_SETTLE_DELAY: Duration = Duration::from_millis(120);
+const DIRECT_UNICODE_MAX_UTF16_UNITS: usize = 512;
+const MAX_OPAQUE_CLIPBOARD_BACKUP_BYTES: usize = 64 * 1024 * 1024;
 const CF_TEXT: u32 = 1;
 const CF_UNICODETEXT: u32 = 13;
 
@@ -137,7 +142,7 @@ where
     Clipboard: FnMut(&str) -> Result<(), String>,
     Report: FnMut(&str),
 {
-    if let Some(formatted_reason) = formatted_multiline_reason(text) {
+    if let Some(formatted_reason) = preferred_clipboard_reason(text) {
         match clipboard(text) {
             Ok(()) => {
                 report(&format!(
@@ -149,12 +154,33 @@ where
                 }
             }
             Err(clipboard_error) => {
-                // A newline becomes VK_RETURN in the direct transport. In chat
-                // and terminal apps that can submit text instead of inserting it.
-                report("multiline clipboard paste failed; direct input disabled to avoid sending Enter; fallback_allowed=false");
-                CommitResult {
-                    status: CommitStatus::Failed(clipboard_error),
-                    transport: CommitTransport::ClipboardPasteFallback,
+                if text.contains(['\r', '\n']) {
+                    // A newline becomes VK_RETURN in the direct transport. In chat
+                    // and terminal apps that can submit text instead of inserting it.
+                    report("multiline clipboard paste failed; direct input disabled to avoid sending Enter; fallback_allowed=false");
+                    CommitResult {
+                        status: CommitStatus::Failed(clipboard_error),
+                        transport: CommitTransport::ClipboardPasteFallback,
+                    }
+                } else {
+                    // The clipboard can be busy or unavailable. Long single-line
+                    // text is safe to retry through Unicode input because it has no
+                    // Enter events that could submit the focused form.
+                    match direct(text) {
+                        Ok(()) => {
+                            report("long single-line clipboard paste failed; DirectUnicodeSendInput fallback succeeded");
+                            CommitResult {
+                                status: CommitStatus::Success,
+                                transport: CommitTransport::DirectUnicodeSendInput,
+                            }
+                        }
+                        Err(direct_error) => CommitResult {
+                            status: CommitStatus::Failed(format!(
+                                "{clipboard_error}; direct Unicode fallback also failed: {direct_error}"
+                            )),
+                            transport: CommitTransport::DirectUnicodeSendInput,
+                        },
+                    }
                 }
             }
         }
@@ -199,11 +225,19 @@ fn report_transport_diagnostic(detail: &str) {
     eprintln!("[input-host][commit-transport] {detail}");
 }
 
-fn formatted_multiline_reason(text: &str) -> Option<&'static str> {
+fn preferred_clipboard_reason(text: &str) -> Option<&'static str> {
     if text.contains(['\r', '\n']) {
         return Some("contains a newline");
     }
+    if text.encode_utf16().count() > DIRECT_UNICODE_MAX_UTF16_UNITS {
+        return Some("is a long single-line payload");
+    }
     None
+}
+
+#[cfg(test)]
+fn formatted_multiline_reason(text: &str) -> Option<&'static str> {
+    preferred_clipboard_reason(text).filter(|reason| *reason == "contains a newline")
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -600,17 +634,100 @@ fn snapshot_clipboard(
     }
 
     if !clipboard_has_readable_text() {
-        return match mode {
-            SelectionCaptureMode::Strict => Err(format_selected_text_failure(
-                SelectedTextFailureStage::ClipboardSnapshot,
-                SelectedTextFailureReason::UnsupportedClipboardContents,
-                "temporary selected-text capture currently requires the clipboard to be empty or to expose Unicode or ANSI text so the probe can restore your clipboard text safely",
-            )),
-            SelectionCaptureMode::BestEffort => Ok(None),
+        // Rich clipboard owners often publish only HTML, RTF, images, or
+        // application-specific formats. We cannot duplicate those delayed or
+        // owner-managed formats safely, but we can still run the text operation
+        // and clear the temporary text afterwards instead of failing before the
+        // user's requested insertion/edit.
+        let opaque = snapshot_opaque_clipboard_contents();
+        return match opaque {
+            Some(formats) if !formats.is_empty() => Ok(Some(ClipboardBackup::Opaque(formats))),
+            _ => match mode {
+                SelectionCaptureMode::Strict => Ok(Some(ClipboardBackup::Unsupported)),
+                SelectionCaptureMode::BestEffort => Ok(Some(ClipboardBackup::Unsupported)),
+            },
         };
     }
 
     Ok(None)
+}
+
+fn snapshot_opaque_clipboard_contents() -> Option<Vec<ClipboardFormatBackup>> {
+    let mut format = 0_u32;
+    let mut total_bytes = 0_usize;
+    let mut backups = Vec::new();
+
+    loop {
+        format = unsafe { EnumClipboardFormats(format) };
+        if format == 0 {
+            break;
+        }
+
+        let handle = unsafe { GetClipboardData(format) };
+        if handle.is_null() {
+            continue;
+        }
+        let bytes_len = unsafe { GlobalSize(handle) };
+        if bytes_len == 0
+            || bytes_len > MAX_OPAQUE_CLIPBOARD_BACKUP_BYTES
+            || total_bytes.saturating_add(bytes_len) > MAX_OPAQUE_CLIPBOARD_BACKUP_BYTES
+        {
+            continue;
+        }
+
+        let locked = unsafe { GlobalLock(handle) } as *const u8;
+        if locked.is_null() {
+            continue;
+        }
+        let bytes = unsafe { std::slice::from_raw_parts(locked, bytes_len).to_vec() };
+        unsafe {
+            GlobalUnlock(handle);
+        }
+        total_bytes = total_bytes.saturating_add(bytes.len());
+        backups.push(ClipboardFormatBackup { format, bytes });
+    }
+
+    (!backups.is_empty()).then_some(backups)
+}
+
+fn restore_opaque_clipboard_contents(
+    owner: HWND,
+    formats: &[ClipboardFormatBackup],
+) -> Result<(), String> {
+    let _guard = ClipboardGuard::open(owner)?;
+    let emptied = unsafe { EmptyClipboard() };
+    if emptied == 0 {
+        return Err(last_os_error("EmptyClipboard failed"));
+    }
+
+    for backup in formats {
+        let handle = unsafe { GlobalAlloc(GMEM_MOVEABLE, backup.bytes.len()) };
+        if handle.is_null() {
+            return Err(last_os_error("GlobalAlloc failed while restoring clipboard"));
+        }
+        let locked = unsafe { GlobalLock(handle) } as *mut u8;
+        if locked.is_null() {
+            unsafe {
+                GlobalFree(handle);
+            }
+            return Err(last_os_error("GlobalLock failed while restoring clipboard"));
+        }
+        unsafe {
+            copy_nonoverlapping(backup.bytes.as_ptr(), locked, backup.bytes.len());
+            GlobalUnlock(handle);
+        }
+        let set_result = unsafe { SetClipboardData(backup.format, handle) };
+        if set_result.is_null() {
+            unsafe {
+                GlobalFree(handle);
+            }
+            return Err(last_os_error(
+                "SetClipboardData failed while restoring clipboard",
+            ));
+        }
+    }
+
+    Ok(())
 }
 
 fn clear_clipboard(owner: HWND) -> Result<(), String> {
@@ -862,6 +979,14 @@ fn restore_clipboard(owner: HWND, backup: &ClipboardBackup) -> Result<(), String
         ClipboardBackup::Empty => clear_clipboard(owner),
         ClipboardBackup::UnicodeText(text) => write_clipboard_unicode_text(owner, text),
         ClipboardBackup::AnsiText(bytes) => write_clipboard_ansi_text_bytes(owner, bytes),
+        ClipboardBackup::Opaque(formats) => restore_opaque_clipboard_contents(owner, formats),
+        ClipboardBackup::Unsupported => {
+            // Unknown formats may be delayed-rendered or owned by another
+            // process, so restoring them byte-for-byte is unsafe. Clearing the
+            // temporary clipboard avoids leaving VoiceFlow's captured/inserted
+            // text behind and lets the primary operation succeed.
+            clear_clipboard(owner)
+        }
     }
 }
 
@@ -1200,6 +1325,13 @@ enum ClipboardBackup {
     Empty,
     UnicodeText(String),
     AnsiText(Vec<u8>),
+    Opaque(Vec<ClipboardFormatBackup>),
+    Unsupported,
+}
+
+struct ClipboardFormatBackup {
+    format: u32,
+    bytes: Vec<u8>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -1401,6 +1533,50 @@ mod tests {
     }
 
     #[test]
+    fn long_single_line_text_uses_clipboard_before_send_input() {
+        let text = "x".repeat(600);
+        let attempts = RefCell::new(Vec::new());
+        let result = commit_text_with_transports(
+            &text,
+            |_| {
+                attempts.borrow_mut().push("direct");
+                Ok(())
+            },
+            |_| {
+                attempts.borrow_mut().push("clipboard");
+                Ok(())
+            },
+            |_| {},
+        );
+
+        assert_eq!(attempts.into_inner(), vec!["clipboard"]);
+        assert_eq!(result.status, CommitStatus::Success);
+        assert_eq!(result.transport, CommitTransport::ClipboardPasteFallback);
+    }
+
+    #[test]
+    fn long_single_line_text_can_fall_back_to_direct_input_when_clipboard_fails() {
+        let text = "x".repeat(600);
+        let attempts = RefCell::new(Vec::new());
+        let result = commit_text_with_transports(
+            &text,
+            |_| {
+                attempts.borrow_mut().push("direct");
+                Ok(())
+            },
+            |_| {
+                attempts.borrow_mut().push("clipboard");
+                Err("clipboard unavailable".to_string())
+            },
+            |_| {},
+        );
+
+        assert_eq!(attempts.into_inner(), vec!["clipboard", "direct"]);
+        assert_eq!(result.status, CommitStatus::Success);
+        assert_eq!(result.transport, CommitTransport::DirectUnicodeSendInput);
+    }
+
+    #[test]
     fn failed_multiline_paste_never_sends_enter_through_direct_input() {
         for text in ["first\nsecond", "first\rsecond", "first\r\nsecond"] {
             for error in ["clipboard contains unsupported formats", "clipboard busy", "paste failed"] {
@@ -1590,3 +1766,4 @@ mod tests {
         assert!(!all_released);
     }
 }
+
