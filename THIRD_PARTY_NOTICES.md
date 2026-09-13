@@ -18,8 +18,10 @@ weights, dependencies, or their bundled components.
 The source distribution contains the worker but no weights or vocabulary.
 Download model files from upstream and read the model terms before use.
 A hash match establishes file identity, not blanket redistribution permission.
-Public redistribution of the existing model-containing ZIP remains pending
-review of the model terms and complete bundled dependency notices.
+The Windows portable release includes the model, vocabulary and separate model
+terms under `licenses/upstream/sensevoice/`. Model authors: Alibaba Group /
+FunAudioLLM SenseVoice team; sherpa-onnx conversion by Fangjun Kuang
+(csukuangfj). The model is not relicensed under VoiceFlow's MIT license.
 
 ## Runtime and build dependencies
 
@@ -31,7 +33,24 @@ review of the model terms and complete bundled dependency notices.
 | Tauri and Rust crates | Exact versions are in Cargo.lock; preserve each dependency's applicable license and notice files when distributing binaries |
 | Tauri CLI / Node tooling | Exact versions are in apps/desktop/package-lock.json; development tooling is not needed to run the app |
 
-This source-level inventory is not a complete binary license bundle. Before
-publishing a Windows binary, collect notices for its exact Rust dependency
-graph, native libraries, Python runtime, wheels and model assets. The existing
-local test ZIP is not cleared for public redistribution by this document.
+## Windows portable distribution
+
+The release includes CPython 3.11.9, ONNX Runtime 1.23.2 and a custom build of
+sherpa-onnx 1.12.28 with TTS and speaker diarization disabled. No eSpeak/Piper
+component is included. The only Python package change is an ASR-only entry
+point; the upstream recognizer implementation is unchanged. Native hashes and
+build flags are recorded in `runtime/asr-build.json`.
+
+The package's `licenses/` directory contains full texts and copyright notices
+for the resolved Rust dependency graph, native ASR build dependencies and
+CPython libraries. `rust-dependencies.json` and `native-dependencies.json`
+index the files. Download sources are recorded in `upstream/sources.json`.
+Exact unmodified corresponding source for MPL-2.0 Rust crates and Eigen is
+included in `licenses/sources/`. Those components remain under MPL-2.0; you may
+obtain, modify and redistribute their source under that license. Build-only
+dependency notices may also be included as a conservative superset.
+
+CPython's Windows runtime includes Microsoft Distributable Code subject to the
+additional Windows binary conditions in its included LICENSE.txt. Those
+conditions apply to that code, not to VoiceFlow's MIT source. Preserve all
+third-party notices when redistributing the portable package.

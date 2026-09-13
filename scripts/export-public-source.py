@@ -11,7 +11,7 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[1]
 ROOT_FILES = {".gitignore", "Cargo.toml", "Cargo.lock", "README.md", "LICENSE",
               "THIRD_PARTY_NOTICES.md", "architecture.md", "spec.md", "snapshot.md"}
-PREFIXES = ("crates/", "apps/", "scripts/", "docs/", ".github/")
+PREFIXES = ("crates/", "apps/", "scripts/", "docs/", ".github/", "licenses/")
 RUNTIME = {"runtime/asr/worker.py", "runtime/asr/requirements.txt"}
 
 def main():

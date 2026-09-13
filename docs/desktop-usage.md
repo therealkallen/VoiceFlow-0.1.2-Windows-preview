@@ -26,7 +26,7 @@ https://developer.microsoft.com/microsoft-edge/webview2/
 
 Rust：`cargo build --release --locked -p input-host -p voiceflow-desktop`。
 
-生成便携包：`scripts/build-desktop-portable.ps1 -RuntimeBundle dist/VoiceFlow-portable-review`。RuntimeBundle 是已验证的 Python/模型来源，不是运行时依赖；输出包含独立副本。
+生成公开便携包请按 [ASR 专用运行库构建说明](asr-release-build.md) 准备运行库和许可，再执行 `scripts/build-desktop-portable.ps1 -RuntimeBundle dist/VoiceFlow-asr-runtime -LicenseBundle dist/VoiceFlow-release-licenses`。输出包含独立的 Python、模型和许可副本。
 
 调试桌面窗口：设置 `VOICEFLOW_DESKTOP_ROOT` 为一个完整桌面便携目录的绝对路径，然后执行 `cargo run -p voiceflow-desktop`。这个覆盖项仅在 debug 构建生效。可追加 `-- --settings-only` 仅启动设置窗口，不注册录音快捷键。前端无需 Node 运行时；开发工具 npm 仅用于 Tauri CLI 和图标生成。修改 UI 后将资源同步到调试目录并刷新窗口，修改 Rust 后重新编译。
 

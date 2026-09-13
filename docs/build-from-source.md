@@ -44,13 +44,13 @@ plus the isolated environment's site-packages directory:
 ```powershell
 $pythonBase = & ./.venv/Scripts/python.exe -c 'import sys; print(sys.base_prefix)'
 ./scripts/build-portable.ps1 -PythonHome $pythonBase -SitePackages .venv/Lib/site-packages -ModelDirectory runtime/asr -Name VoiceFlow-runtime-local
-./scripts/build-desktop-portable.ps1 -RuntimeBundle dist/VoiceFlow-runtime-local -Name VoiceFlow-desktop-local
 ```
 
-Double-click `dist/VoiceFlow-desktop-local/VoiceFlow.exe`.
-See [desktop usage](desktop-usage.md) for lifecycle and destination-machine checks.
-These commands make a local test package. A public binary requires the complete
-third-party license bundle described in THIRD_PARTY_NOTICES.md.
+This creates the local backend/runtime input. To produce a desktop ZIP, follow
+the [ASR-only release build recipe](asr-release-build.md), which supplies the
+custom native runtime and complete license bundle required by the desktop
+packaging script. See [desktop usage](desktop-usage.md) for lifecycle and
+destination-machine checks.
 
 ## Tests and source release
 

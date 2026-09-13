@@ -1,13 +1,26 @@
 param(
     [string]$RuntimeBundle = 'dist/VoiceFlow-portable-review',
+    [Parameter(Mandatory=$true)][string]$LicenseBundle,
     [string]$Name = ('VoiceFlow-desktop-' + (Get-Date -Format 'yyyyMMdd-HHmmss')),
     [switch]$SkipBuild,
     [switch]$SkipZip
 )
 $ErrorActionPreference = 'Stop'
 $repo = Split-Path $PSScriptRoot -Parent
-if ($Name -notmatch '^[a-zA-Z0-9_-]+$') { throw 'Name must be a simple directory name.' }
+if ($Name -notmatch '^[a-zA-Z0-9][a-zA-Z0-9._-]*$') { throw 'Name must be a simple directory name.' }
 $source = (Resolve-Path -LiteralPath $RuntimeBundle).Path
+$licenseRoot = (Resolve-Path -LiteralPath $LicenseBundle).Path
+foreach ($required in @('license-hashes.json', 'rust-dependencies.json', 'native-dependencies.json', 'upstream/sensevoice/FunASR-MODEL-LICENSE.txt')) {
+    if (!(Test-Path -LiteralPath (Join-Path $licenseRoot $required))) { throw "Missing release notice: $required" }
+}
+$licenseHashes = Get-Content -LiteralPath "$licenseRoot/license-hashes.json" -Raw | ConvertFrom-Json
+foreach ($entry in $licenseHashes.PSObject.Properties) {
+    if ((Get-FileHash -LiteralPath (Join-Path $licenseRoot $entry.Name)).Hash -ne $entry.Value) { throw "License hash mismatch: $($entry.Name)" }
+}
+if (!(Test-Path -LiteralPath "$source/runtime/asr-build.json")) { throw 'Use the documented ASR-only runtime for public desktop packages.' }
+$asrBuild = Get-Content -LiteralPath "$source/runtime/asr-build.json" -Raw | ConvertFrom-Json
+if ($asrBuild.tts_enabled -ne $false) { throw 'Public package requires the ASR-only runtime.' }
+if ((Get-FileHash -LiteralPath "$source/runtime/asr/model.int8.onnx").Hash -ne 'C71F0CE00BEC95B07744E116345E33D8CBBE08CEF896382CF907BF4B51A2CD51') { throw 'Unexpected SenseVoice model hash.' }
 $output = Join-Path $repo "dist/$Name"
 if (Test-Path -LiteralPath $output) { throw "Output already exists: $output" }
 if (!$SkipBuild) {
@@ -33,8 +46,9 @@ foreach ($app in @('settings-ui', 'overlay-ui')) {
     $runtimeName = if ($app -eq 'settings-ui') { 'SETTINGS' } else { 'OVERLAY' }
     "window.__VOICEFLOW_${runtimeName}_RUNTIME__ = null;" | Set-Content -LiteralPath "$output/apps/$app/src/runtime-state.js" -Encoding utf8
 }
-Copy-Item -LiteralPath "$repo/docs/desktop-usage.md" -Destination "$output/README.md"
+Copy-Item -LiteralPath "$repo/docs/release-readme.md" -Destination "$output/README.md"
 Copy-Item -LiteralPath "$repo/LICENSE", "$repo/THIRD_PARTY_NOTICES.md" -Destination $output
+Copy-Item -LiteralPath $licenseRoot -Destination "$output/licenses" -Recurse
 $manifest = Get-ChildItem -LiteralPath $output -File -Recurse | ForEach-Object {
     [pscustomobject]@{ path = $_.FullName.Substring($output.Length + 1); sha256 = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash }
 }
