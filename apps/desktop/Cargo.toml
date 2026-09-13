@@ -1,6 +1,6 @@
 [package]
 name = "voiceflow-desktop"
-version = "0.1.2"
+version = "0.1.3"
 edition = "2024"
 license.workspace = true
 build = "build.rs"
@@ -19,3 +19,4 @@ windows-sys = { version = "0.59", features = ["Win32_Foundation", "Win32_System_
 
 [features]
 custom-protocol = ["tauri/custom-protocol"]
+
