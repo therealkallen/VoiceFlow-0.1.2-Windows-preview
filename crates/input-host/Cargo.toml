@@ -1,0 +1,37 @@
+[package]
+name = "input-host"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+cpal = "0.15"
+ctrlc = "3"
+diagnostics = { path = "../diagnostics" }
+getrandom = "0.2"
+intent-edit-executor = { path = "../intent-edit-executor" }
+keyring = { version = "3.6.3", features = ["windows-native"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+shared-protocol = { path = "../shared-protocol" }
+speech-engine = { path = "../speech-engine" }
+
+[target.'cfg(windows)'.dependencies]
+tao = { version = "0.35.3", default-features = false, features = ["rwh_06"] }
+windows-sys = { version = "0.59", features = [
+    "Win32_Foundation",
+    "Win32_Media_Audio",
+    "Win32_Globalization",
+    "Win32_Security",
+    "Win32_System_DataExchange",
+    "Win32_System_Diagnostics_Debug",
+    "Win32_System_LibraryLoader",
+    "Win32_System_Memory",
+    "Win32_System_SystemServices",
+    "Win32_System_Threading",
+    "Win32_Storage_FileSystem",
+    "Win32_Graphics_Gdi",
+    "Win32_UI_HiDpi",
+    "Win32_UI_Input_KeyboardAndMouse",
+    "Win32_UI_WindowsAndMessaging",
+] }
+wry = { version = "0.55.1", default-features = false, features = ["protocol", "transparent"] }

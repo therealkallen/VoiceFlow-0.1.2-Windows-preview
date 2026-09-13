@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VoiceFlow · 浮窗预览</title>
+  <link rel="stylesheet" href="./src/styles.css">
+  <style>
+    body { overflow: auto; background: #f5f5f7; color: #1d1d1f; padding: 64px 24px; }
+    main { max-width: 840px; margin: auto; }
+    h1 { font-size: 28px; letter-spacing: -.7px; font-weight: 600; margin: 0 0 12px; }
+    header p { color: #6e6e76; font-size: 14px; margin-bottom: 40px; line-height: 1.7; }
+    .states { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+    article { background: #e9e9ef; border: 1px solid #dfdfe6; border-radius: 18px; padding: 22px; }
+    article > p { font-size: 12px; margin: 0; color: #62626b; }
+    .overlay-shell { position: relative; height: 130px; }
+    @media (max-width: 520px) { .states { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body><main>
+  <header><h1>VoiceFlow 浮窗</h1><p>四种状态，共用正式浮窗样式。此页面仅供视觉预览，不会启动录音。</p></header>
+  <div class="states">
+<article><p>正在说话</p><div class="overlay-shell" data-state="listening"><section class="voice-widget"><span class="voice-content"><span class="voice-visual" aria-hidden="true"><span class="voice-bars"><span></span><span></span><span></span></span><span class="thinking-dots"><span></span><span></span><span></span></span><span class="success-mark"></span><span class="error-mark">!</span></span><span class="voice-copy"><strong>正在说话</strong></span></span></section></div></article>
+<article><p>思考中</p><div class="overlay-shell" data-state="processing"><section class="voice-widget"><span class="voice-content"><span class="voice-visual" aria-hidden="true"><span class="voice-bars"><span></span><span></span><span></span></span><span class="thinking-dots"><span></span><span></span><span></span></span><span class="success-mark"></span><span class="error-mark">!</span></span><span class="voice-copy"><strong>思考中</strong></span></span></section></div></article>
+<article><p>已完成</p><div class="overlay-shell" data-state="success"><section class="voice-widget"><span class="voice-content"><span class="voice-visual" aria-hidden="true"><span class="voice-bars"><span></span><span></span><span></span></span><span class="thinking-dots"><span></span><span></span><span></span></span><span class="success-mark"></span><span class="error-mark">!</span></span><span class="voice-copy"><strong>已完成</strong></span></span></section></div></article>
+<article><p>处理失败</p><div class="overlay-shell" data-state="error"><section class="voice-widget"><span class="voice-content"><span class="voice-visual" aria-hidden="true"><span class="voice-bars"><span></span><span></span><span></span></span><span class="thinking-dots"><span></span><span></span><span></span></span><span class="success-mark"></span><span class="error-mark">!</span></span><span class="voice-copy"><strong>处理失败</strong></span></span></section></div></article>
+  </div>
+</main></body>
+</html>

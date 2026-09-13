@@ -1,0 +1,822 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VoiceFlow Settings</title>
+    <link rel="stylesheet" href="./src/styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <aside class="side-rail" aria-label="Settings navigation">
+        <div class="brand-block">
+          <p class="brand-name">VoiceFlow</p>
+          <p class="brand-subtitle" data-i18n="brand.subtitle">Speech Input Method</p>
+          <p class="brand-version" data-i18n="brand.version">v0.1.2-beta</p>
+        </div>
+
+        <nav class="section-nav">
+          <a class="is-active" href="#overview" data-section-link="overview">
+            <span class="nav-mark" aria-hidden="true"></span>
+            <span data-i18n="nav.overview">Overview</span>
+          </a>
+          <a href="#history" data-section-link="history">
+            <span class="nav-mark" aria-hidden="true"></span>
+            <span data-i18n="nav.history">History</span>
+          </a>
+          <a href="#settings" data-section-link="settings">
+            <span class="nav-mark" aria-hidden="true"></span>
+            <span data-i18n="nav.settings">Settings</span>
+          </a>
+          <a href="#sessions" data-section-link="sessions">
+            <span class="nav-mark" aria-hidden="true"></span>
+            <span data-i18n="nav.diagnostics">Diagnostics</span>
+          </a>
+        </nav>
+      </aside>
+
+      <main class="content-column">
+        <section class="companion-section overview-section is-active-section" id="overview" aria-label="Runtime status overview">
+          <header class="overview-header">
+            <div>
+              <h1>VoiceFlow</h1>
+              <p class="page-kicker" id="overview-status" aria-live="polite">Checking the VoiceFlow connection…</p>
+            </div>
+          </header>
+
+          <section class="overview-usage-panel" aria-labelledby="overview-usage-title">
+            <div class="overview-usage-head">
+              <div>
+                <h2 id="overview-usage-title" data-i18n="overview.usage">Usage</h2>
+                <p data-i18n="overview.usageSummary">Recent activity and all-time totals</p>
+              </div>
+              <span class="overview-period" id="usage-trend-total">0</span>
+            </div>
+            <div class="overview-usage-content">
+              <section class="usage-trend-card" aria-label="Seven-day usage">
+                <p class="overview-usage-label" data-i18n="overview.lastSevenDays">Last 7 days</p>
+                <p class="overview-usage-caption" data-i18n="overview.sevenDayActivity">Words entered and estimated time saved over seven days</p>
+                <div class="usage-chart-legend" aria-hidden="true">
+                  <span class="is-words" data-i18n="overview.insertedText">Words entered</span>
+                  <span class="is-time" data-i18n="overview.timeSaved">Time saved</span>
+                </div>
+                <div class="usage-chart" id="usage-trend-chart" role="img" aria-label="Daily inserted text and estimated time saved for the last seven days"></div>
+                <p class="overview-empty" id="usage-empty-state" data-i18n="overview.noUsage">Complete a dictation to start your local activity chart.</p>
+              </section>
+              <div class="overview-all-time">
+                <p class="overview-usage-label" data-i18n="overview.allTimeTotals">All-time totals</p>
+                <dl class="overview-stat-grid" aria-label="All-time usage totals">
+                  <div class="overview-stat-card"><dt data-i18n="overview.totalDictationDuration">Total dictation duration</dt><dd id="usage-recording-duration">--</dd></div>
+                  <div class="overview-stat-card"><dt data-i18n="overview.insertedText">Words entered</dt><dd id="usage-inserted-text">--</dd></div>
+                  <div class="overview-stat-card"><dt data-i18n="overview.averageDictationSpeed">Average dictation speed</dt><dd class="overview-speed-value"><span id="usage-average-speed">--</span> <span class="overview-speed-suffix" id="usage-average-speed-suffix" data-i18n="overview.speedSuffix" hidden>words/min</span></dd></div>
+                  <div class="overview-stat-card is-subordinate"><dt data-i18n="overview.timeSaved">Estimated time saved</dt><dd id="usage-time-saved">--</dd></div>
+                </dl>
+              </div>
+            </div>
+          </section>
+
+          <section class="overview-operational overview-section-block" aria-labelledby="overview-operational-title">
+            <div class="overview-operational-head">
+              <div>
+                <h2 id="overview-operational-title" data-i18n="overview.currentState">Current setup</h2>
+                <p class="overview-evidence-line">
+                  <span data-i18n="overview.latestReport">Latest diagnostic report</span>
+                  <strong id="overview-report-health">Unavailable</strong>
+                  <span aria-hidden="true">·</span>
+                  <span id="overview-report-age">No report recorded</span>
+                </p>
+                <p class="overview-health-note" id="overview-health-note">Use VoiceFlow once to record diagnostic evidence.</p>
+              </div>
+            </div>
+            <div class="overview-attention" id="overview-attention" hidden>
+              <p id="overview-recent-problem"></p>
+              <p id="overview-recommended-action"></p>
+            </div>
+            <dl class="overview-setup-list overview-operational-list">
+              <div id="hero-summary"><dt data-i18n="overview.shortcut">Shortcut</dt><dd id="overview-setup-shortcut">Ctrl+Space</dd></div>
+              <div><dt data-i18n="settings.mode">Recording mode</dt><dd id="overview-recording-mode">Push-to-talk</dd></div>
+              <div><dt data-i18n="overview.speechRecognition">Speech recognition</dt><dd id="overview-local-asr">Local</dd></div>
+              <div><dt data-i18n="overview.textRefinement">Text refinement</dt><dd id="overview-refinement">--</dd></div>
+            </dl>
+          </section>
+
+          <section class="overview-recent-card overview-section-block">
+            <div class="overview-card-head">
+              <div>
+                <h2 data-i18n="overview.recentDictations">Recent dictations</h2>
+                <p data-i18n="overview.recentDictationsNote">Your latest locally stored dictation outputs</p>
+              </div>
+              <div class="overview-card-actions">
+                <button type="button" class="overview-icon-button" id="overview-privacy-toggle" aria-pressed="false" aria-label="Hide recent dictation previews" title="Hide recent dictation previews">
+                  <svg class="privacy-icon privacy-icon-visible" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.1 12s3.6-6 9.9-6 9.9 6 9.9 6-3.6 6-9.9 6-9.9-6-9.9-6Z"></path><circle cx="12" cy="12" r="2.5"></circle></svg>
+                  <svg class="privacy-icon privacy-icon-hidden" viewBox="0 0 24 24" aria-hidden="true" hidden><path d="m3 3 18 18"></path><path d="M10.6 6.2A10.8 10.8 0 0 1 12 6c6.3 0 9.9 6 9.9 6a15.7 15.7 0 0 1-2.2 2.8"></path><path d="M6.6 6.6C3.7 8.4 2.1 12 2.1 12s3.6 6 9.9 6a10.6 10.6 0 0 0 4.1-.8"></path></svg>
+                </button>
+                <a href="#history" class="overview-text-link" data-section-jump="history" data-i18n="overview.viewHistory">View history</a>
+              </div>
+            </div>
+            <div class="overview-recent-list" id="overview-recent-list"></div>
+            <p class="overview-empty" id="overview-recent-empty" data-i18n="overview.noRecentDictations">Your recent dictations will appear here.</p>
+          </section>
+        </section>
+
+        <section class="companion-section history-section" id="history" aria-label="Dictation history">
+          <header class="page-header">
+            <div>
+              <h1 data-i18n="history.title">History</h1>
+              <p class="page-kicker" id="history-empty-state" data-i18n="history.subtitle">Stored locally on this device. Selected-text edits are redacted by default.</p>
+            </div>
+          </header>
+
+          <section class="history-card" aria-label="Recent history entries">
+            <div class="history-list" id="history-list"></div>
+          </section>
+        </section>
+
+        <section class="companion-section sessions-section" id="sessions" aria-label="Diagnostics">
+          <header class="page-header">
+            <div>
+              <h1 data-i18n="diagnostics.title">VoiceFlow health</h1>
+              <p class="page-kicker" data-i18n="diagnostics.subtitle">See whether VoiceFlow is working and what to try when it needs attention.</p>
+            </div>
+          </header>
+
+          <section class="diagnostics-summary" id="diagnostics" aria-labelledby="diagnostics-summary-title">
+            <div class="diagnostics-summary-head">
+              <div>
+                <h2 id="diagnostics-summary-title" data-i18n="diagnostics.runtimeSummary">Runtime summary</h2>
+                <p class="diagnostics-connection" id="diagnostics-connection-status" aria-live="polite">Checking the VoiceFlow connection…</p>
+              </div>
+              <p class="diagnostics-evidence-line">
+                <span data-i18n="overview.latestReport">Latest report</span>
+                <strong id="runtime-health">Idle</strong>
+                <span aria-hidden="true">·</span>
+                <span id="report-recency-chip">Unavailable</span>
+              </p>
+            </div>
+            <div class="diagnostics-conclusion">
+              <p class="report-note" id="health-note">
+                Use VoiceFlow once to see a health summary.
+              </p>
+              <div class="diagnostics-problem-row">
+                <div>
+                  <h3 data-i18n="diagnostics.recentProblems">Recent problems</h3>
+                  <p class="report-path" id="recent-problem-summary">No recent problems have been recorded.</p>
+                </div>
+                <div class="is-hidden" id="recommended-action-card">
+                  <h3 data-i18n="diagnostics.recommendedAction">Recommended action</h3>
+                  <p class="report-path" id="recommended-action"></p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <details class="advanced-panel diagnostic-layer">
+            <summary data-i18n="diagnostics.advancedTroubleshooting">Advanced troubleshooting</summary>
+            <div class="advanced-grid">
+              <section class="technical-card">
+                <p class="report-label" data-i18n="diagnostics.recentOutcomes">Recent outcomes</p>
+                <ul class="metric-grid">
+                  <li><span data-i18n="diagnostics.attempted">Attempted</span><strong id="attempted-sessions">0</strong></li>
+                  <li><span data-i18n="diagnostics.successful">Successful</span><strong id="successful-sessions">0</strong></li>
+                  <li><span data-i18n="diagnostics.failed">Failed</span><strong id="failed-sessions">0</strong></li>
+                  <li>
+                    <span data-i18n="diagnostics.lateFailures">Late failures</span>
+                    <strong id="late-failures">0</strong>
+                  </li>
+                  <li>
+                    <span data-i18n="diagnostics.earlyFailures">Early failures</span>
+                    <strong id="early-failures">0</strong>
+                  </li>
+                </ul>
+              </section>
+
+              <section class="technical-card">
+                <div class="card-head">
+                  <div>
+                    <p class="report-label" data-i18n="diagnostics.validation">Validation</p>
+                    <h2 data-i18n="common.selectedText">Selected text</h2>
+                  </div>
+                  <span class="report-chip" id="commit-path-outlook-chip">Unavailable</span>
+                </div>
+                <p class="report-path" id="commit-path-signal">No commit-path signal yet.</p>
+                <p class="report-note" id="commit-path-guidance">
+                  Commit transport guidance will appear here once enough successful sessions are available.
+                </p>
+                <div class="mix-row">
+                  <span class="mix-pill" id="dictation-mix">Dictation 0</span>
+                  <span class="mix-pill" id="edit-mix">Edit 0</span>
+                  <span class="mix-pill" id="intent-mix">Intent 0</span>
+                </div>
+              </section>
+
+              <section class="technical-card developer-card">
+                <div class="card-head">
+                  <div>
+                    <p class="report-label" data-i18n="diagnostics.latest">Latest</p>
+                    <h2 data-i18n="diagnostics.sessionResult">Session result</h2>
+                  </div>
+                </div>
+                <div class="latest-stack">
+                  <div>
+                    <p class="report-label" data-i18n="overview.success">Success</p>
+                    <p class="report-path" id="last-success">No successful session has been recorded yet.</p>
+                    <p class="report-note" id="last-success-meta">The next completed session will appear here.</p>
+                  </div>
+                  <div>
+                    <p class="report-label" data-i18n="diagnostics.failure">Failure</p>
+                    <p class="report-path" id="last-failure">No failure recorded in the current report.</p>
+                    <p class="report-note" id="last-failure-meta">Internal failure details appear here.</p>
+                  </div>
+                </div>
+              </section>
+              <section class="technical-card">
+                <div class="report-head">
+                  <p class="report-label">Live runtime</p>
+                  <span class="report-chip" id="runtime-stage-chip">Unavailable</span>
+                </div>
+                <p class="report-path" id="runtime-stage-copy">
+                  Launch the live host to compare the running runtime against the saved settings.
+                </p>
+              </section>
+
+              <section class="technical-card" id="failure-profile-section">
+                <p class="report-label">Failure profile</p>
+                <div class="mix-row">
+                  <span class="mix-pill" id="silence-failures">Silence gate 0</span>
+                  <span class="mix-pill" id="no-speech-failures">No speech 0</span>
+                  <span class="mix-pill" id="commit-failures">Commit 0</span>
+                  <span class="mix-pill" id="recording-failures">Recording 0</span>
+                  <span class="mix-pill" id="recognizing-failures">Recognizing 0</span>
+                </div>
+                <p class="report-path" id="dominant-failure-mode">No dominant failure mode yet.</p>
+                <p class="report-note" id="dominant-failure-guidance">
+                  Failure guidance will appear here once the live host has enough failed sessions to classify.
+                </p>
+              </section>
+
+              <section class="technical-card" id="verification-focus-section">
+                <div class="report-head">
+                  <p class="report-label">Verification focus</p>
+                  <span class="report-chip" id="verification-focus-chip">Unavailable</span>
+                </div>
+                <p class="report-path" id="verification-focus">No verification focus yet.</p>
+                <p class="report-note" id="verification-focus-guidance">
+                  The diagnostics runbook will become more specific once the mirrored live host has enough signal.
+                </p>
+              </section>
+
+              <section class="technical-card" id="workload-focus-section">
+                <div class="report-head">
+                  <p class="report-label">Workload focus</p>
+                  <span class="report-chip" id="workload-focus-chip">Unavailable</span>
+                </div>
+                <p class="report-path" id="workload-focus">No workload focus yet.</p>
+                <p class="report-note" id="workload-focus-guidance">
+                  This card will summarize recent workload shape once enough successful sessions exist.
+                </p>
+              </section>
+
+              <section class="technical-card">
+                <div class="report-head">
+                  <p class="report-label">Runtime alignment</p>
+                  <span class="report-chip" id="runtime-alignment-chip">Unavailable</span>
+                </div>
+                <p class="report-path" id="runtime-shortcut-headline">No live host runtime has been mirrored yet.</p>
+                <p class="report-note" id="runtime-shortcut-note">
+                  Launch the live host to compare the running shortcut and runtime profile against the saved settings.
+                </p>
+              </section>
+
+              <section class="technical-card" id="tuning-section">
+                <div class="report-head">
+                  <p class="report-label">Suggested tuning</p>
+                  <div class="report-chip-row">
+                    <span class="report-chip" id="tuning-recommendations-chip">Idle</span>
+                    <button type="button" class="secondary-button suggestion-bulk-action" id="stage-all-recommendations">
+                      Stage all
+                    </button>
+                  </div>
+                </div>
+                <div class="tuning-next-action">
+                  <div class="runtime-alignment-head">
+                    <p class="report-label">Next best action</p>
+                    <span class="report-chip" id="tuning-next-action-chip">Observe</span>
+                  </div>
+                  <p class="report-path" id="tuning-next-action-headline">
+                    No host-derived action is pending yet.
+                  </p>
+                  <p class="report-note" id="tuning-next-action-copy">
+                    Once diagnostics accumulate enough evidence, this panel will suggest apply, restart, or observe.
+                  </p>
+                </div>
+                <div class="tuning-workflow" aria-label="Tuning workflow">
+                  <div class="tuning-step">
+                    <span class="report-chip" id="tuning-step-stage-chip">Idle</span>
+                    <p class="report-label">Stage</p>
+                    <p class="report-note" id="tuning-step-stage-copy">No fixes need staging yet.</p>
+                  </div>
+                  <div class="tuning-step">
+                    <span class="report-chip" id="tuning-step-apply-chip">Idle</span>
+                    <p class="report-label">Apply</p>
+                    <p class="report-note" id="tuning-step-apply-copy">No host apply is pending.</p>
+                  </div>
+                  <div class="tuning-step">
+                    <span class="report-chip" id="tuning-step-restart-chip">Idle</span>
+                    <p class="report-label">Restart</p>
+                    <p class="report-note" id="tuning-step-restart-copy">No runtime restart is pending.</p>
+                  </div>
+                  <div class="tuning-step">
+                    <span class="report-chip" id="tuning-step-verify-chip">Idle</span>
+                    <p class="report-label">Verify</p>
+                    <p class="report-note" id="tuning-step-verify-copy">Run the live host and observe the next report.</p>
+                  </div>
+                </div>
+                <div class="tuning-runbook">
+                  <div class="runtime-alignment-head">
+                    <p class="report-label">Action checklist</p>
+                    <span class="report-chip" id="tuning-runbook-chip">Idle</span>
+                  </div>
+                  <div class="recommendation-list" id="tuning-runbook-list">
+                    <p class="report-note">Checklist steps appear here when diagnostics can guide the next operator step.</p>
+                  </div>
+                </div>
+                <div class="recommendation-list" id="tuning-recommendations">
+                  <p class="report-note">
+                    Host-derived tuning suggestions will appear here once the mirrored live host has a clearer failure pattern.
+                  </p>
+                </div>
+              </section>
+
+              <section class="technical-card" id="diagnostic-patterns-section" hidden>
+                <div id="recent-failure-pattern-group" hidden>
+                  <p class="report-label">Recent failure pattern</p>
+                  <ul class="failure-history" id="failure-history"><li>No recent failure pattern mirrored yet.</li></ul>
+                </div>
+                <div id="shortcut-warning-group" hidden>
+                  <p class="report-label">Shortcut warnings</p>
+                  <ul class="shortcut-warning-list" id="shortcut-runtime-warnings"><li>No persisted shortcut warnings mirrored from the host.</li></ul>
+                </div>
+              </section>
+            </div>
+          </details>
+
+          <details class="raw-diagnostics-panel">
+            <summary data-i18n="diagnostics.rawEvidence">Raw technical evidence</summary>
+            <div class="raw-diagnostics-grid">
+              <section class="technical-card">
+                <div class="report-head">
+                  <p class="report-label">Latest live-host report</p>
+                  <span class="report-chip is-hidden" id="report-warning">No warning</span>
+                </div>
+                <p class="report-path" id="report-path">No live-host report has been written in this session yet.</p>
+                <p class="report-note" id="report-freshness">No mirrored report timestamp is available yet.</p>
+              </section>
+
+              <section class="technical-card">
+                <p class="report-label">Commit transports</p>
+                <ul class="metric-grid">
+                  <li><span data-i18n="diagnostics.directCommits">Direct commits</span><strong id="direct-commits">0</strong></li>
+                  <li><span data-i18n="diagnostics.clipboardFallback">Clipboard fallback</span><strong id="clipboard-commits">0</strong></li>
+                  <li><span data-i18n="diagnostics.selectionReplace">Selection replace</span><strong id="selection-commits">0</strong></li>
+                </ul>
+              </section>
+
+              <section class="technical-card">
+                <p class="report-label">Cumulative usage technicals</p>
+                <div class="timing-grid">
+                  <div class="timing-cell">
+                    <span>Avg end-to-end</span>
+                    <strong id="usage-avg-latency">--</strong>
+                  </div>
+                  <div class="timing-cell">
+                    <span>Local only</span>
+                    <strong id="usage-route-local-only">0</strong>
+                  </div>
+                  <div class="timing-cell">
+                    <span>Local refine</span>
+                    <strong id="usage-route-local-refine">0</strong>
+                  </div>
+                  <div class="timing-cell">
+                    <span>Cloud refine</span>
+                    <strong id="usage-route-cloud-refine">0</strong>
+                  </div>
+                </div>
+              </section>
+
+              <section class="technical-card">
+                <p class="report-label">Timing profile</p>
+                <div class="timing-grid">
+                  <div class="timing-cell">
+                    <span>Avg total</span>
+                    <strong id="avg-total-latency">--</strong>
+                  </div>
+                  <div class="timing-cell">
+                    <span>Avg start</span>
+                    <strong id="avg-start-latency">--</strong>
+                  </div>
+                  <div class="timing-cell">
+                    <span>Avg audio</span>
+                    <strong id="avg-audio-duration">--</strong>
+                  </div>
+                  <div class="timing-cell">
+                    <span>Avg RMS</span>
+                    <strong id="avg-audio-rms">--</strong>
+                  </div>
+                </div>
+              </section>
+
+              <section class="technical-card">
+                <p class="report-label">Route mix</p>
+                <div class="mix-row">
+                  <span class="mix-pill" id="local-only-mix">Local only 0</span>
+                  <span class="mix-pill" id="local-refine-mix">Local + refine 0</span>
+                  <span class="mix-pill" id="cloud-refine-mix">Cloud + refine 0</span>
+                </div>
+              </section>
+
+              <section class="technical-card">
+                <p class="report-label">Action mix</p>
+                <div class="mix-stack">
+                  <div>
+                    <p class="report-note">Selected-text actions</p>
+                    <div class="mix-row" id="selected-text-action-mix">
+                      <span class="mix-pill">No edit actions yet</span>
+                    </div>
+                  </div>
+                  <div>
+                    <p class="report-note">Wake-phrase actions</p>
+                    <div class="mix-row" id="wake-phrase-action-mix">
+                      <span class="mix-pill">No intent actions yet</span>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section class="technical-card">
+                <p class="report-label">Runtime drift and profile</p>
+                <div class="mix-row" id="runtime-drift-fields"></div>
+                <div class="runtime-drift-list" id="runtime-drift-list"></div>
+                <dl class="runtime-profile-list" id="runtime-profile-list">
+                  <div class="runtime-profile-item"><dt>Shortcut</dt><dd>Unavailable</dd></div>
+                  <div class="runtime-profile-item"><dt>Mode</dt><dd>Unavailable</dd></div>
+                  <div class="runtime-profile-item"><dt>Refine</dt><dd>Unavailable</dd></div>
+                  <div class="runtime-profile-item"><dt>Audio cues</dt><dd>Unavailable</dd></div>
+                  <div class="runtime-profile-item"><dt>Diagnostics</dt><dd>Unavailable</dd></div>
+                  <div class="runtime-profile-item"><dt>Wake phrase</dt><dd>Unavailable</dd></div>
+                </dl>
+              </section>
+            </div>
+          </details>
+        </section>
+
+        <section class="companion-section settings-section" id="settings" aria-label="Settings controls">
+          <header class="page-header settings-header">
+            <div>
+              <h1 data-i18n="settings.title">Settings</h1>
+              <p class="page-kicker" data-i18n="settings.subtitle">Control how VoiceFlow listens, writes, and connects.</p>
+            </div>
+            <div class="command-meta settings-connection">
+              <span class="connection-dot" aria-hidden="true"></span>
+              <p class="bridge-status" id="bridge-status" aria-live="polite">Start VoiceFlow to save settings</p>
+              <p class="dirty-status" id="dirty-status" aria-live="polite" hidden>Unsaved changes</p>
+            </div>
+          </header>
+
+          <div class="settings-workspace">
+            <nav class="settings-subnav" aria-label="Settings sections">
+              <button type="button" class="settings-subnav-item is-active" data-settings-section="general" aria-current="page">General</button>
+              <button type="button" class="settings-subnav-item" data-settings-section="voice-output">Voice &amp; Output</button>
+              <button type="button" class="settings-subnav-item" data-settings-section="history-privacy">History &amp; Privacy</button>
+              <button type="button" class="settings-subnav-item" data-settings-section="ai-provider">AI Provider</button>
+              <button type="button" class="settings-subnav-item" data-settings-section="advanced">Advanced</button>
+            </nav>
+
+            <div class="settings-content">
+              <section class="settings-pane is-active" data-settings-pane="general">
+                <header class="settings-pane-header">
+                  <h2 data-i18n="settings.sectionGeneral">General</h2>
+                  <p data-i18n="settings.sectionGeneralHelp">Language and application feedback preferences.</p>
+                </header>
+                <article class="settings-group" id="feedback">
+                  <div class="settings-control-block">
+                    <div class="settings-control-heading">
+                      <span class="settings-row-label" data-i18n="settings.systemLanguage">System language</span>
+                    </div>
+                    <div class="segmented settings-segmented" data-segment="systemLanguage" id="settings-language-group">
+                      <button type="button" class="segment is-active" data-value="English">English</button>
+                      <button type="button" class="segment" data-value="Chinese">&#20013;&#25991;</button>
+                    </div>
+                    <small class="field-helper" data-i18n="settings.languageHelp">Changes the main UI and live voice widget language.</small>
+                  </div>
+                  <div class="settings-row">
+                    <div>
+                      <div class="settings-control-heading">
+                        <span class="settings-row-label" data-i18n="settings.audioCues">Audio cues</span>
+                      </div>
+                      <p data-i18n="settings.audioCuesHelp">Play short sounds when recording starts and stops.</p>
+                    </div>
+                    <button type="button" class="toggle is-on" id="audio-toggle" aria-pressed="true" aria-label="Audio cues"><span></span></button>
+                  </div>
+                </article>
+              </section>
+
+              <section class="settings-pane" data-settings-pane="voice-output" hidden>
+                <header class="settings-pane-header">
+                  <h2 data-i18n="settings.sectionVoiceOutput">Voice &amp; Output</h2>
+                  <p data-i18n="settings.sectionVoiceOutputHelp">Recording controls, pause detection, and instructed input.</p>
+                </header>
+                <article class="settings-group" id="shortcut">
+                  <div class="settings-group-head">
+                    <div>
+                      <h3 data-i18n="settings.primaryTrigger">Recording shortcut</h3>
+                      <p data-i18n="settings.shortcutGroupHelp">Use one shortcut for dictation and selected-text editing.</p>
+                    </div>
+                  </div>
+                  <div class="shortcut-control-grid">
+                    <label class="field">
+                      <span data-i18n="settings.modifiers">Modifiers</span>
+                      <div class="pill-row" id="shortcut-modifiers">
+                        <button type="button" class="pill modifier-pill is-active" data-modifier="Control">Ctrl</button>
+                        <button type="button" class="pill modifier-pill" data-modifier="Alt">Alt</button>
+                        <button type="button" class="pill modifier-pill" data-modifier="Shift">Shift</button>
+                        <button type="button" class="pill modifier-pill" data-modifier="Meta">Meta</button>
+                      </div>
+                    </label>
+                    <label class="field">
+                      <span data-i18n="settings.key">Key</span>
+                      <div class="input-shell select-shell"><select id="primary-shortcut-key"></select></div>
+                    </label>
+                  </div>
+                  <p class="shortcut-warning is-stable" id="shortcut-warning"></p>
+                  <p class="shortcut-warning-note" id="shortcut-warning-note"></p>
+                </article>
+
+                <article class="settings-group" id="speech">
+                  <div class="settings-group-head">
+                    <div>
+                      <h3 data-i18n="settings.recordingBehavior">Recording behavior</h3>
+                      <p data-i18n="settings.recordingBehaviorHelp">Choose how recording ends and how pauses are detected.</p>
+                    </div>
+                    <span class="setting-timing" data-i18n="settings.effectNextDictation">Next dictation</span>
+                  </div>
+                  <div class="field">
+                    <span id="recording-mode-label" data-i18n="settings.mode">Mode</span>
+                    <div class="segmented settings-segmented" data-segment="mode" role="radiogroup" aria-labelledby="recording-mode-label">
+                      <button type="button" class="segment is-active" data-value="PushToTalk" role="radio" aria-checked="true" tabindex="0" data-i18n="settings.pushToTalk">Push-to-talk</button>
+                      <button type="button" class="segment" data-value="Toggle" role="radio" aria-checked="false" tabindex="-1" data-i18n="settings.toggle">Toggle</button>
+                    </div>
+                  </div>
+                  <label class="field">
+                    <span data-i18n="settings.pauseSensitivity">Pause sensitivity</span>
+                    <input id="silence-gate" type="range" min="1" max="5" value="2" />
+                    <small id="silence-label">Conservative</small>
+                  </label>
+                </article>
+
+                <article class="settings-group">
+                  <div class="settings-group-head">
+                    <div>
+                      <h3 data-i18n="settings.voiceCommands">Instructed dictation</h3>
+                      <p data-i18n="settings.intentHelper">Say the trigger phrase to translate, rewrite, or structure the following content.</p>
+                    </div>
+                    <span class="setting-timing" data-i18n="settings.effectNextDictation">Next dictation</span>
+                  </div>
+                  <div class="settings-row">
+                    <div>
+                      <span class="settings-row-label" data-i18n="settings.wakePhraseEnabled">Enable instructed dictation</span>
+                      <p data-i18n="settings.intentNotValidated">This feature is available but still experimental.</p>
+                    </div>
+                    <button type="button" class="toggle is-on" id="wake-phrase-toggle" aria-pressed="true"><span></span></button>
+                  </div>
+                  <label class="field">
+                    <span data-i18n="settings.wakePhrase">Trigger phrase</span>
+                    <div class="input-shell"><input id="wake-phrase" type="text" value="Voice Flow" /></div>
+                  </label>
+                </article>
+
+                <article class="settings-group settings-info-group">
+                  <h3 data-i18n="settings.textRefinement">Text refinement</h3>
+                  <p class="refinement-copy" data-i18n="settings.textRefinementBody">VoiceFlow cleans up dictated text after local speech recognition.</p>
+                  <p class="refinement-model-status" data-i18n="settings.defaultRefinementModel">Active model is controlled by Provider Settings.</p>
+                </article>
+              </section>
+
+              <section class="settings-pane" data-settings-pane="ai-provider" hidden>
+                <header class="settings-pane-header">
+                  <h2 data-i18n="settings.sectionProvider">AI Provider</h2>
+                  <p data-i18n="settings.sectionProviderHelp">Configure optional cloud refinement without exposing credentials.</p>
+                </header>
+                <article class="settings-group provider-settings-card" id="provider-settings">
+                  <div class="provider-form-grid">
+                    <label class="field provider-preset-field">
+                      <span data-i18n="settings.provider">Provider</span>
+                      <div class="input-shell select-shell">
+                        <select id="provider-preset">
+                          <option value="bailian" data-i18n="settings.providerBailian">Alibaba Cloud Bailian</option>
+                          <option value="volcengine_ark" data-i18n="settings.providerVolcengineArk">Volcengine Ark</option>
+                          <option value="tencent_hunyuan" data-i18n="settings.providerTencentHunyuan">Tencent Hunyuan</option>
+                          <option value="custom_openai_compatible" data-i18n="settings.providerCustomOpenAi">Custom OpenAI-compatible</option>
+                        </select>
+                      </div>
+                    </label>
+                    <label class="field provider-model-field" id="provider-model-field">
+                      <span data-i18n="settings.activeModel">Active model</span>
+                      <div class="input-shell"><input id="provider-active-model" type="text" autocomplete="off" spellcheck="false" placeholder="provider-model-id" /></div>
+                      <small class="field-helper" id="provider-active-model-help" data-i18n="settings.activeModelHelp">Enter the provider or gateway model ID manually.</small>
+                    </label>
+                    <label class="field" id="provider-custom-base-url-field">
+                      <span data-i18n="settings.baseUrl">Base URL</span>
+                      <div class="input-shell"><input id="provider-base-url" type="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://provider.example/v1" aria-describedby="provider-base-url-message" /></div>
+                      <small class="field-helper provider-field-message" id="provider-base-url-message" aria-live="polite" data-i18n="settings.baseUrlCustomRequired">Custom providers require an explicit Base URL.</small>
+                    </label>
+                  </div>
+                  <p class="provider-apply-note" data-i18n="settings.effectNextRequest">Changes apply to the next AI request.</p>
+
+                  <div class="provider-credential-box">
+                    <div class="settings-group-head compact">
+                      <div>
+                        <h3 data-i18n="settings.apiKey">API key</h3>
+                        <p id="provider-api-key-help" data-i18n="settings.apiKeyHelp">Stored securely in Windows Credential Manager for the selected provider.</p>
+                      </div>
+                      <span class="report-chip" id="provider-configured-chip" data-i18n="settings.apiKeyMissing">Missing key</span>
+                    </div>
+                    <label class="field">
+                      <span class="sr-only" data-i18n="settings.apiKey">API key</span>
+                      <div class="input-shell"><input id="provider-api-key" type="password" autocomplete="new-password" spellcheck="false" placeholder="Paste API key" /></div>
+                    </label>
+                    <div class="placeholder-actions provider-credential-actions">
+                      <button type="button" class="secondary-button" id="save-provider-api-key" data-i18n="settings.saveApiKey">Save / Replace API key</button>
+                      <button type="button" class="secondary-button quiet-danger" id="clear-provider-api-key" data-i18n="settings.clearApiKey">Clear stored API key</button>
+                    </div>
+                    <p class="command-copy-status" id="provider-api-key-status" aria-live="polite"></p>
+                  </div>
+
+                  <div class="provider-test-row">
+                    <button type="button" class="secondary-button" id="test-provider-connection" data-i18n="settings.testConnection">Test connection</button>
+                    <div>
+                      <p class="command-copy-status" id="provider-test-status" aria-live="polite"></p>
+                      <p class="placeholder-note" id="provider-test-details"></p>
+                    </div>
+                  </div>
+                  <p class="privacy-note" data-i18n="settings.aiPrivacyNote">Speech recognition runs locally. Refined text is sent only to the configured AI provider.</p>
+
+                  <details class="settings-details provider-advanced">
+                    <summary data-i18n="settings.advancedDetails">Advanced details</summary>
+                    <div class="settings-details-body">
+                      <div class="provider-endpoint-settings" id="provider-preset-endpoint-settings">
+                        <div class="provider-endpoint-heading">
+                          <div>
+                            <strong data-i18n="settings.providerEndpoint">Provider endpoint</strong>
+                            <p class="field-helper" id="provider-preset-base-url"></p>
+                          </div>
+                          <label class="provider-endpoint-toggle">
+                            <input id="provider-endpoint-override" type="checkbox" />
+                            <span data-i18n="settings.useCustomEndpoint">Use custom endpoint</span>
+                          </label>
+                        </div>
+                        <label class="field" id="provider-override-base-url-field" hidden>
+                          <span data-i18n="settings.baseUrl">Base URL</span>
+                          <div class="input-shell"><input id="provider-override-base-url" type="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://provider.example/v1" aria-describedby="provider-override-base-url-message" /></div>
+                          <small class="field-helper provider-field-message" id="provider-override-base-url-message" aria-live="polite" data-i18n="settings.customEndpointHelp">Overrides the built-in endpoint for this provider.</small>
+                        </label>
+                        <button type="button" class="secondary-button provider-endpoint-reset" id="provider-endpoint-reset" data-i18n="settings.resetProviderEndpoint">Reset to provider default</button>
+                      </div>
+                      <label class="field">
+                        <span data-i18n="settings.requestTimeout">Request timeout</span>
+                        <div class="input-shell"><input id="provider-timeout-seconds" type="number" min="1" max="120" step="0.1" inputmode="decimal" placeholder="12" aria-describedby="provider-timeout-message" /></div>
+                        <small class="field-helper provider-field-message" id="provider-timeout-message" aria-live="polite" data-i18n="settings.timeoutHelp">Seconds. Leave blank for the 12 second default.</small>
+                      </label>
+                      <div class="provider-status-grid provider-effective-grid">
+                        <div class="provider-status-row"><span data-i18n="settings.effectiveProvider">Effective provider</span><strong id="provider-effective-provider">--</strong></div>
+                        <div class="provider-status-row"><span data-i18n="settings.effectiveBaseUrl">Effective base URL</span><strong id="provider-effective-base-url">--</strong></div>
+                        <div class="provider-status-row"><span data-i18n="settings.effectiveModel">Effective model</span><strong id="provider-effective-model">--</strong></div>
+                        <div class="provider-status-row"><span data-i18n="settings.effectiveTimeout">Effective timeout</span><strong id="provider-effective-timeout">--</strong></div>
+                      </div>
+                      <div class="provider-status-grid provider-status-summary">
+                        <div class="provider-status-row"><span data-i18n="settings.storedCredential">Stored credential</span><strong id="provider-stored-credential-status">Missing</strong></div>
+                        <div class="provider-status-row"><span data-i18n="settings.effectiveApiKey">Effective API key</span><strong id="provider-key-status">Missing</strong></div>
+                        <div class="provider-status-row"><span data-i18n="settings.effectiveKeySource">Effective key source</span><strong id="provider-key-source-status">Missing</strong></div>
+                      </div>
+                      <p class="placeholder-note" id="provider-specific-note"></p>
+                      <div class="provider-override-list" id="provider-override-list"></div>
+                    </div>
+                  </details>
+                </article>
+              </section>
+
+              <section class="settings-pane" data-settings-pane="history-privacy" hidden>
+                <header class="settings-pane-header">
+                  <h2 data-i18n="settings.sectionHistoryPrivacy">History &amp; Privacy</h2>
+                  <p data-i18n="settings.sectionHistoryPrivacyHelp">Control local retention and remove stored history.</p>
+                </header>
+                <article class="settings-group history-privacy-card">
+                  <div class="settings-group-head">
+                    <div>
+                      <h3 data-i18n="settings.historyStorage">Local history</h3>
+                      <p data-i18n="settings.historyPrivacyNote">History is stored locally on this device.</p>
+                    </div>
+                    <span class="setting-timing" data-i18n="common.localOnly">Local only</span>
+                  </div>
+                  <div class="settings-control-heading">
+                    <span class="settings-row-label" data-i18n="settings.retentionPeriod">Retention period</span>
+                  </div>
+                  <div class="retention-options" id="history-retention-options" aria-label="History retention">
+                    <button type="button" class="retention-choice is-active" data-retention-value="latest_100" aria-pressed="true" data-i18n="settings.latest100">Latest 100 entries</button>
+                    <button type="button" class="retention-choice" data-retention-value="latest_500" aria-pressed="false" data-i18n="settings.latest500">Latest 500 entries</button>
+                    <button type="button" class="retention-choice" data-retention-value="latest_1000" aria-pressed="false" data-i18n="settings.latest1000">Latest 1000 entries</button>
+                    <button type="button" class="retention-choice" data-retention-value="last_7_days" aria-pressed="false" data-i18n="settings.last7Days">Last 7 days</button>
+                    <button type="button" class="retention-choice" data-retention-value="last_30_days" aria-pressed="false" data-i18n="settings.last30Days">Last 30 days</button>
+                    <button type="button" class="retention-choice" data-retention-value="unlimited" aria-pressed="false" data-i18n="settings.unlimited">Unlimited</button>
+                  </div>
+                  <p class="retention-warning" id="history-retention-warning" hidden data-i18n="settings.unlimitedWarning">Unlimited history may increase local storage usage.</p>
+                  <div class="danger-zone">
+                    <div>
+                      <h3 data-i18n="settings.clearHistory">Clear History</h3>
+                      <p data-i18n="settings.clearHistoryHelp">Permanently removes retained local history from this device.</p>
+                    </div>
+                    <button type="button" class="secondary-button danger-button" id="clear-history" data-i18n="settings.clearHistory">Clear History</button>
+                    <p class="command-copy-status" id="clear-history-status" data-i18n="settings.clearHistoryBridgeRequired">Start VoiceFlow to clear history.</p>
+                  </div>
+                </article>
+              </section>
+
+              <section class="settings-pane" data-settings-pane="advanced" hidden>
+                <header class="settings-pane-header">
+                  <h2 data-i18n="settings.sectionAdvanced">Advanced</h2>
+                  <p data-i18n="settings.sectionAdvancedHelp">Optional diagnostics and technical settings for troubleshooting.</p>
+                </header>
+                <article class="settings-group">
+                  <div class="settings-group-head">
+                    <div>
+                      <h3 data-i18n="settings.diagnosticsVerbosity">Diagnostics detail</h3>
+                      <p data-i18n="settings.diagnosticsVerbosityHelp">Verbose mode records more non-sensitive runtime events for troubleshooting.</p>
+                    </div>
+                  </div>
+                  <div class="segmented settings-segmented" data-segment="verbosity">
+                    <button type="button" class="segment is-active" data-value="Standard" data-i18n="settings.diagnosticsStandard">Standard</button>
+                    <button type="button" class="segment" data-value="Verbose" data-i18n="settings.diagnosticsVerbose">Verbose</button>
+                  </div>
+                </article>
+
+                <article class="settings-group prompt-overrides-card" id="prompt-overrides">
+                  <div class="settings-group-head">
+                    <div>
+                      <h3 data-i18n="settings.promptOverrides">Prompt overrides</h3>
+                      <p data-i18n="settings.promptCustomizationHelp">Advanced customization. Changes may affect accuracy and formatting.</p>
+                    </div>
+                  </div>
+                  <p class="placeholder-note" data-i18n="settings.promptStatusPreview">Review the warning before editing. Each prompt is saved separately.</p>
+                  <p class="placeholder-note" data-i18n="settings.promptReloadNote">Saved prompts apply to subsequent requests. UI settings take priority over file overrides; resetting uses built-in defaults without deleting files.</p>
+                  <div class="prompt-override-list" id="prompt-overrides-list"></div>
+                  <p class="command-copy-status" id="prompt-overrides-status" data-i18n="settings.promptStatusReady">Prompt override status is loaded from the runtime bridge.</p>
+                  <div class="placeholder-actions prompt-actions">
+                    <button type="button" class="secondary-button" id="reload-prompts" data-i18n="settings.reloadPrompts">Reload prompts</button>
+                  </div>
+                </article>
+
+                <details class="settings-details">
+                  <summary data-i18n="settings.runtimeInformation">Runtime information</summary>
+                  <div class="settings-details-body technical-stack">
+                    <div><p class="report-label" data-i18n="settings.loadedSettingsFile">Loaded settings file</p><p class="report-path" id="settings-path">Not loaded yet</p></div>
+                    <div><p class="report-label" data-i18n="settings.settingsWarnings">Settings warnings</p><ul class="warning-list" id="settings-warnings"><li>No runtime warnings.</li></ul></div>
+                    <div><p class="report-label" data-i18n="settings.localDraft">Local draft</p><span class="report-chip" id="draft-stage-chip">In sync</span><p class="lifecycle-copy" id="draft-stage-copy">No unsaved local changes are pending.</p></div>
+                    <div><p class="report-label" data-i18n="settings.savedSettings">Saved settings</p><span class="report-chip" id="saved-stage-chip">Waiting</span><p class="lifecycle-copy" id="saved-stage-copy">No saved change has been mirrored in this page session yet.</p></div>
+                    <div><p class="report-label" data-i18n="settings.lastSave">Last save</p><p class="report-path" id="last-apply-time">No save mirrored yet.</p><p class="report-path" id="last-apply-source"></p><p class="report-path" id="last-apply-fields"></p></div>
+                  </div>
+                </details>
+
+                <details class="settings-details">
+                  <summary data-i18n="settings.terminalFallback">Terminal fallback</summary>
+                  <div class="settings-details-body command-card">
+                    <pre class="command-preview" id="save-command">No settings changes pending.</pre>
+                    <div class="command-preview-actions">
+                      <button type="button" class="secondary-button" id="copy-save-command" data-i18n="settings.copyHostCommand">Copy host command</button>
+                      <p class="command-copy-status" id="command-copy-status" data-i18n="settings.manualCommand">Manual save command for the same settings.</p>
+                    </div>
+                  </div>
+                </details>
+              </section>
+            </div>
+          </div>
+
+          <section class="save-dock is-hidden" aria-label="Settings save controls">
+            <div class="save-copy">
+              <p class="report-label" data-i18n="settings.saveState">Save state</p>
+              <p class="command-status" id="save-status" role="status" aria-live="polite" aria-atomic="true"></p>
+            </div>
+            <div class="command-button-row">
+              <button type="button" class="secondary-button" id="revert-settings" data-i18n="settings.discardChanges">Discard changes</button>
+              <button type="button" class="apply-button" id="apply-settings" data-i18n="settings.saveChanges">Save changes</button>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <script src="./src/runtime-state.js"></script>
+    <script src="./src/overview-analytics.js"></script>
+    <script src="./src/settings-ui-model.js"></script>
+    <script src="./src/provider-settings-model.js"></script>
+    <script src="./src/main.js"></script>
+  </body>
+</html>

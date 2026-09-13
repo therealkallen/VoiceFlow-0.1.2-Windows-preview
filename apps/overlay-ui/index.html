@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VoiceFlow Overlay</title>
+    <link rel="stylesheet" href="./src/styles.css" />
+  </head>
+  <body>
+    <main class="overlay-shell" data-state="hidden" aria-hidden="true">
+      <section class="voice-widget" aria-live="polite" aria-label="Voice input status">
+        <span class="voice-content">
+          <span class="voice-visual" aria-hidden="true">
+            <span class="voice-bars">
+              <span></span>
+              <span></span>
+              <span></span>
+            </span>
+            <span class="thinking-dots">
+              <span></span>
+              <span></span>
+              <span></span>
+            </span>
+            <span class="success-mark"></span>
+            <span class="error-mark">!</span>
+          </span>
+          <span class="voice-copy">
+            <strong id="voice-state-label"></strong>
+            <span id="voice-status-text" hidden></span>
+          </span>
+        </span>
+      </section>
+    </main>
+
+    <script src="./src/runtime-state.js"></script>
+    <script src="./src/main.js"></script>
+  </body>
+</html>
