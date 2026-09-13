@@ -1122,7 +1122,12 @@ fn wake_phrase_variant_prefix_rest<'a>(
 }
 
 fn trim_leading_trigger_fillers(mut input: &str) -> (&str, bool) {
-    const FILLERS: &[&str] = &["\u{55ef}", "\u{5443}", "\u{55e8}", "\u{5582}", "hey", "hi"];
+    // SenseVoice sometimes truncates "hey" to "he" before the configured
+    // VoiceFlow trigger. Treat that token as a filler only at the beginning of
+    // the transcript, so ordinary dictation containing "he" remains unchanged.
+    const FILLERS: &[&str] = &[
+        "\u{55ef}", "\u{5443}", "\u{55e8}", "\u{5582}", "hey", "he", "hi",
+    ];
     let mut removed = false;
 
     for _ in 0..2 {
@@ -1325,6 +1330,13 @@ mod tests {
             assert_eq!(parts.leading_filler_removed, filler_removed);
             assert_eq!(parts.parser_result, "generic_task");
         }
+    }
+
+    #[test]
+    fn instructed_trigger_accepts_asr_truncated_hey_filler() {
+        let parts = parsed_instructed_task("he voiceflow 呃帮我写一封邮件");
+        assert_eq!(parts.task_text, "呃帮我写一封邮件");
+        assert!(parts.leading_filler_removed);
     }
 
     #[test]
@@ -1761,3 +1773,4 @@ mod tests {
         assert_eq!(balanced.enable_thinking, Some(false));
     }
 }
+
