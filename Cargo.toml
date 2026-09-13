@@ -1,0 +1,16 @@
+[workspace]
+members = [
+    "crates/shared-protocol",
+    "crates/diagnostics",
+    "crates/speech-engine",
+    "crates/input-host",
+    "crates/intent-edit-executor",
+    "apps/desktop",
+]
+resolver = "3"
+
+[workspace.package]
+edition = "2024"
+version = "0.1.0"
+license = "MIT"
+authors = ["Codex"]
